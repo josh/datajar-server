@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"tailscale.com/client/tailscale"
@@ -19,6 +18,9 @@ type Capabilities struct {
 
 func CanAccessPath(requestPath string, caps []Capabilities, accessType string) bool {
 	requestPath = strings.TrimSuffix(requestPath, "/")
+	if requestPath == "" {
+		requestPath = "/"
+	}
 
 	for _, cap := range caps {
 		var accessList []string
@@ -28,15 +30,12 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 			accessList = cap.Write
 		}
 
-		for _, access := range accessList {
-			if access == "*" {
+		for _, accessPattern := range accessList {
+			pathPrefix := "/" + strings.TrimPrefix(strings.TrimSuffix(accessPattern, "*"), "/")
+			if strings.HasPrefix(requestPath, pathPrefix) {
 				return true
 			}
 
-			allowed, _ := filepath.Match("/"+access, requestPath)
-			if allowed {
-				return true
-			}
 		}
 	}
 	return false
