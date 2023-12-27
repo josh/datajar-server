@@ -1,9 +1,7 @@
 package scriptingbridge
 
 import (
-	"encoding/json"
-	"strings"
-
+	"github.com/josh/datajar-server/internal"
 	"github.com/josh/datajar-server/internal/shortcuts/scriptingbridge"
 )
 
@@ -16,26 +14,11 @@ func FetchStore() (map[string]interface{}, error) {
 	return result, nil
 }
 
-type shortcutInput struct {
-	Key   string      `json:"key"`
-	Value interface{} `json:"value"`
-}
-
 func SetStoreValue(key string, value interface{}) error {
-	jsonPath := key
-	if strings.Contains(key, "/") {
-		jsonPath = strings.Join(strings.Split(strings.Trim(key, "/"), "/"), ".")
-	}
-
-	input := shortcutInput{
-		Key:   jsonPath,
-		Value: value,
-	}
-	inputData, err := json.Marshal(input)
+	input, err := internal.PrepareShortcutInput(key, value)
 	if err != nil {
 		return err
 	}
-
-	_, err = scriptingbridge.RunShortcut("Set Data Jar Value", string(inputData))
+	_, err = scriptingbridge.RunShortcut("Set Data Jar Value", input)
 	return err
 }

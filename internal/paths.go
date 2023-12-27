@@ -1,4 +1,4 @@
-package acl
+package internal
 
 import (
 	"path/filepath"

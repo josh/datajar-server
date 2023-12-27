@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/josh/datajar-server/internal/acl"
+	"github.com/josh/datajar-server/internal"
 	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
 
@@ -66,7 +66,15 @@ func main() {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			scriptingbridge.SetStoreValue(r.URL.Path, data)
+			if r.URL.Path == "" || r.URL.Path == "/" {
+				http.Error(w, "cannot write to root", http.StatusBadRequest)
+				return
+			}
+			err = scriptingbridge.SetStoreValue(r.URL.Path, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			w.WriteHeader(http.StatusCreated)
 		} else {
 			store, err := sqlite.FetchStore()
@@ -76,7 +84,7 @@ func main() {
 			}
 			healthError = nil
 
-			target := acl.GetPath(store, r.URL.Path)
+			target := internal.GetPath(store, r.URL.Path)
 
 			jsonData, err := json.Marshal(target)
 			if err != nil {
@@ -106,12 +114,12 @@ func checkPermissions(localClient *tailscale.LocalClient, r *http.Request, acces
 		return err
 	}
 
-	caps, err := tailcfg.UnmarshalCapJSON[acl.Capabilities](whois.CapMap, peerCapName)
+	caps, err := tailcfg.UnmarshalCapJSON[internal.Capabilities](whois.CapMap, peerCapName)
 	if err != nil {
 		return err
 	}
 
-	if !acl.CanAccessPath(r.URL.Path, caps, accessType) {
+	if !internal.CanAccessPath(r.URL.Path, caps, accessType) {
 		return errors.New("unauthorized")
 	}
 
