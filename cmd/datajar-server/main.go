@@ -18,12 +18,13 @@ import (
 func main() {
 	statedir := flag.String("statedir", "", "Directory to store state")
 	hostname := flag.String("hostname", "datajar", "Tailscale node hostname")
+	ephemeral := flag.Bool("ephemeral", false, "Register as an Ephemeral node")
 	flag.Parse()
 
 	s := &tsnet.Server{
 		Dir:       *statedir,
 		Hostname:  *hostname,
-		Ephemeral: true,
+		Ephemeral: *ephemeral,
 	}
 	defer s.Close()
 
