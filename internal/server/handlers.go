@@ -30,6 +30,7 @@ func HandleRead(w http.ResponseWriter, r *http.Request) {
 
 	// If target type is string, just output it, otherwise serialize to json
 	if _, ok := target.(string); ok {
+		w.Header().Set("Content-Type", "text/plain")
 		fmt.Fprintf(w, "%s\n", target)
 		return
 	} else {
@@ -41,6 +42,7 @@ func HandleRead(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		healthError = nil
+		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintf(w, "%s\n", jsonData)
 	}
 }
