@@ -29,6 +29,9 @@ func TestCanAccessPath(t *testing.T) {
 	if CanAccessPath("/foo", caps, "read") != false {
 		t.Error("foo/* could read /foo")
 	}
+	if CanAccessPath("/foo/", caps, "read") != false {
+		t.Error("foo/* could read /foo")
+	}
 	if CanAccessPath("/foo/bar", caps, "read") != true {
 		t.Error("foo/* could not read /foo/bar")
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"tailscale.com/client/tailscale"
 	"tailscale.com/tailcfg"
@@ -16,7 +17,9 @@ type Capabilities struct {
 	Write []string `json:"write"`
 }
 
-func CanAccessPath(path string, caps []Capabilities, accessType string) bool {
+func CanAccessPath(requestPath string, caps []Capabilities, accessType string) bool {
+	requestPath = strings.TrimSuffix(requestPath, "/")
+
 	for _, cap := range caps {
 		var accessList []string
 		if accessType == "read" {
@@ -30,7 +33,7 @@ func CanAccessPath(path string, caps []Capabilities, accessType string) bool {
 				return true
 			}
 
-			allowed, _ := filepath.Match("/"+access, path)
+			allowed, _ := filepath.Match("/"+access, requestPath)
 			if allowed {
 				return true
 			}
