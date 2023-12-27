@@ -46,7 +46,12 @@ func main() {
 	var healthError error
 
 	http.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := checkPermissions(lc, r)
+		accessType := "read"
+		if r.Method == "POST" {
+			accessType = "write"
+		}
+
+		err := checkPermissions(lc, r, accessType)
 		if err != nil {
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
 			http.Error(w, errMsg, http.StatusUnauthorized)
@@ -83,7 +88,7 @@ func main() {
 
 const peerCapName = "github.com/josh/datajar-server"
 
-func checkPermissions(localClient *tailscale.LocalClient, r *http.Request) error {
+func checkPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) error {
 	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
 	if err != nil {
 		return err
@@ -94,7 +99,7 @@ func checkPermissions(localClient *tailscale.LocalClient, r *http.Request) error
 		return err
 	}
 
-	if !acl.CanReadPath(r.URL.Path, caps) {
+	if !acl.CanAccessPath(r.URL.Path, caps, accessType) {
 		return errors.New("unauthorized")
 	}
 

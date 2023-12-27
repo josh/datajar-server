@@ -6,17 +6,25 @@ import (
 )
 
 type Capabilities struct {
-	Read []string `json:"read"`
+	Read  []string `json:"read"`
+	Write []string `json:"write"`
 }
 
-func CanReadPath(path string, caps []Capabilities) bool {
+func CanAccessPath(path string, caps []Capabilities, accessType string) bool {
 	for _, cap := range caps {
-		for _, read := range cap.Read {
-			if read == "*" {
+		var accessList []string
+		if accessType == "read" {
+			accessList = cap.Read
+		} else if accessType == "write" {
+			accessList = cap.Write
+		}
+
+		for _, access := range accessList {
+			if access == "*" {
 				return true
 			}
 
-			allowed, _ := filepath.Match("/"+read, path)
+			allowed, _ := filepath.Match("/"+access, path)
 			if allowed {
 				return true
 			}

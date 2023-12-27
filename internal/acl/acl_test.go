@@ -5,46 +5,46 @@ import (
 	"testing"
 )
 
-func TestCanReadPath(t *testing.T) {
+func TestCanAccessPath(t *testing.T) {
 	var caps []Capabilities
 
 	caps = []Capabilities{{Read: []string{"foo"}}}
-	if CanReadPath("/foo", caps) != true {
+	if CanAccessPath("/foo", caps, "read") != true {
 		t.Error("foo could not read /foo")
 	}
 
 	caps = []Capabilities{{Read: []string{"foo"}}}
-	if CanReadPath("/bar", caps) != false {
+	if CanAccessPath("/bar", caps, "read") != false {
 		t.Error("foo could read /bar")
 	}
 
 	caps = []Capabilities{{Read: []string{"foo", "bar"}}}
-	if CanReadPath("/foo", caps) != true {
+	if CanAccessPath("/foo", caps, "read") != true {
 		t.Error("foo could not read /foo")
 	}
-	if CanReadPath("/bar", caps) != true {
+	if CanAccessPath("/bar", caps, "read") != true {
 		t.Error("bar could not read /bar")
 	}
 
 	caps = []Capabilities{{Read: []string{"foo/*"}}}
-	if CanReadPath("/foo", caps) != false {
+	if CanAccessPath("/foo", caps, "read") != false {
 		t.Error("foo/* could read /foo")
 	}
-	if CanReadPath("/foo/bar", caps) != true {
+	if CanAccessPath("/foo/bar", caps, "read") != true {
 		t.Error("foo/* could not read /foo/bar")
 	}
-	if CanReadPath("/foo/baz", caps) != true {
+	if CanAccessPath("/foo/baz", caps, "read") != true {
 		t.Error("foo/* could not read /foo/baz")
 	}
 
 	caps = []Capabilities{{Read: []string{"*"}}}
-	if CanReadPath("/", caps) != true {
+	if CanAccessPath("/", caps, "read") != true {
 		t.Error("* could not read /")
 	}
-	if CanReadPath("/foo", caps) != true {
+	if CanAccessPath("/foo", caps, "read") != true {
 		t.Error("* could not read /foo")
 	}
-	if CanReadPath("/foo/bar", caps) != true {
+	if CanAccessPath("/foo/bar", caps, "read") != true {
 		t.Error("* could not read /foo/bar")
 	}
 }
