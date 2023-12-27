@@ -28,16 +28,21 @@ func HandleRead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(target)
-	if err != nil {
-		healthError = err
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// If target type is string, just output it, otherwise serialize to json
+	if _, ok := target.(string); ok {
+		fmt.Fprintf(w, "%s\n", target)
 		return
+	} else {
+		jsonData, err := json.Marshal(target)
+		if err != nil {
+			healthError = err
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		healthError = nil
+		fmt.Fprintf(w, "%s\n", jsonData)
 	}
-	healthError = nil
-
-	fmt.Fprintf(w, "%s\n", jsonData)
 }
 
 func HandleWrite(w http.ResponseWriter, r *http.Request) {
