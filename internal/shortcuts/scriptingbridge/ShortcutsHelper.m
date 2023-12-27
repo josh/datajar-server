@@ -3,18 +3,18 @@
 #import "Shortcuts.h"
 #import "ShortcutsHelper.h"
 
-void runShortcut(const char* shortcutName, ShortcutResult *result) {
+void runShortcut(const char* name, const char *input, ShortcutResult *result) {
     @try {
         ShortcutsApplication *app = [SBApplication applicationWithBundleIdentifier:@"com.apple.shortcuts.events"];
         SBElementArray<ShortcutsShortcut *> *shortcuts = [app shortcuts];
-        ShortcutsShortcut *shortcut = [shortcuts objectWithName:[NSString stringWithUTF8String:shortcutName]];
+        ShortcutsShortcut *shortcut = [shortcuts objectWithName:[NSString stringWithUTF8String:name]];
 
         if ([shortcut name] == nil) {
             result->err = "Shortcut not found";
             return;
         }
 
-        id output = [shortcut runWithInput:nil];
+        id output = [shortcut runWithInput:[NSString stringWithUTF8String:input]];
 
         if (output == nil) {
             return;

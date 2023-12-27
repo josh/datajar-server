@@ -26,12 +26,12 @@ func TestFetchStore(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(commandOutput, sqliteOutput) {
-		t.Errorf("command and sqlite output are different")
+		t.Errorf("command and sqlite output are different:\n%v\n%v", commandOutput, sqliteOutput)
 	}
 	if !reflect.DeepEqual(commandOutput, scriptingbridgeOutput) {
-		t.Errorf("command and scriptingbridge output are different")
+		t.Errorf("command and scriptingbridge output are different:\n%v\n%v", commandOutput, scriptingbridgeOutput)
 	}
 	if !reflect.DeepEqual(scriptingbridgeOutput, sqliteOutput) {
-		t.Errorf("scriptingbridge and sqlite output are different")
+		t.Errorf("scriptingbridge and sqlite output are different:\n%v\n%v", scriptingbridgeOutput, sqliteOutput)
 	}
 }

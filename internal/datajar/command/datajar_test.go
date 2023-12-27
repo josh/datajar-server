@@ -13,3 +13,16 @@ func TestFetchStore(t *testing.T) {
 		t.Error("output dictionary is empty")
 	}
 }
+
+// Depends on Shortcut named "Set Data Jar Value" that accepts input
+func TestSetStoreValue(t *testing.T) {
+	err := SetStoreValue("foo", 42)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = SetStoreValue("foo", nil)
+	if err != nil {
+		t.Error(err)
+	}
+}

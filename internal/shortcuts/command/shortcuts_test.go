@@ -6,7 +6,7 @@ import (
 
 // Depends on Shortcut named "Test" that outputs 42
 func TestRunShortcut(t *testing.T) {
-	output, err := RunShortcut("Test")
+	output, err := RunShortcut("Test", "")
 	if err != nil {
 		t.Errorf("error running shortcut: %s", err)
 	} else if _, ok := output.(float64); !ok {
@@ -17,7 +17,7 @@ func TestRunShortcut(t *testing.T) {
 }
 
 func TestMissingShortcut(t *testing.T) {
-	_, err := RunShortcut("DefinitelyDoesNotExist")
+	_, err := RunShortcut("DefinitelyDoesNotExist", "")
 	if err == nil {
 		t.Errorf("expected error, got nil")
 	}

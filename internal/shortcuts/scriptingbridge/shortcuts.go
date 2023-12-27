@@ -11,18 +11,27 @@ import "C"
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"unsafe"
 )
 
-func RunShortcut(name string) ([]interface{}, error) {
+var mutex = &sync.Mutex{}
+
+func RunShortcut(name string, input string) ([]interface{}, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
+
+	cInput := C.CString(input)
+	defer C.free(unsafe.Pointer(cInput))
 
 	cResult := C.ShortcutResult{}
 	defer C.free(unsafe.Pointer(cResult.bytes))
 	defer C.free(unsafe.Pointer(cResult.err))
 
-	C.runShortcut(cName, &cResult)
+	C.runShortcut(cName, cInput, &cResult)
 
 	if cResult.err != nil {
 		return nil, fmt.Errorf(C.GoString(cResult.err))
