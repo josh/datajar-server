@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/josh/datajar-server/internal/acl"
+	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
 
 	"tailscale.com/client/tailscale"
@@ -58,21 +59,32 @@ func main() {
 			return
 		}
 
-		store, err := sqlite.FetchStore()
-		if err != nil {
-			healthError = err
-			log.Fatal(err)
-		}
-		healthError = nil
+		if accessType == "write" {
+			var data interface{}
+			err := json.NewDecoder(r.Body).Decode(&data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			scriptingbridge.SetStoreValue(r.URL.Path, data)
+			w.WriteHeader(http.StatusCreated)
+		} else {
+			store, err := sqlite.FetchStore()
+			if err != nil {
+				healthError = err
+				log.Fatal(err)
+			}
+			healthError = nil
 
-		target := acl.GetPath(store, r.URL.Path)
+			target := acl.GetPath(store, r.URL.Path)
 
-		jsonData, err := json.Marshal(target)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
+			jsonData, err := json.Marshal(target)
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			fmt.Fprintf(w, "%s\n", jsonData)
 		}
-		fmt.Fprintf(w, "%s\n", jsonData)
 	}))
 
 	http.HandleFunc("/-/healthy", func(w http.ResponseWriter, r *http.Request) {

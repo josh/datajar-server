@@ -2,6 +2,7 @@ package command
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/josh/datajar-server/internal/shortcuts/command"
 )
@@ -21,8 +22,13 @@ type shortcutInput struct {
 }
 
 func SetStoreValue(key string, value interface{}) error {
+	jsonPath := key
+	if strings.Contains(key, "/") {
+		jsonPath = strings.Join(strings.Split(strings.Trim(key, "/"), "/"), ".")
+	}
+
 	input := shortcutInput{
-		Key:   key,
+		Key:   jsonPath,
 		Value: value,
 	}
 	inputData, err := json.Marshal(input)
