@@ -1,7 +1,7 @@
 package scriptingbridge
 
 import (
-	"github.com/josh/datajar-server/internal/server"
+	"github.com/josh/datajar-server/internal/datajar/shortcuts"
 	"github.com/josh/datajar-server/internal/shortcuts/scriptingbridge"
 )
 
@@ -15,7 +15,7 @@ func FetchStore() (map[string]interface{}, error) {
 }
 
 func SetStoreValue(key string, value interface{}) error {
-	input, err := server.PrepareShortcutInput(key, value)
+	input, err := shortcuts.PrepareShortcutInput(key, value)
 	if err != nil {
 		return err
 	}

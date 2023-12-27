@@ -1,14 +1,15 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
-	"github.com/josh/datajar-server/internal/datajar/sqlite"
 	"github.com/josh/datajar-server/internal/server"
 
 	"tailscale.com/tsnet"
@@ -37,9 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var healthError error
-
-	http.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	defaultHandler := func(w http.ResponseWriter, r *http.Request) {
 		accessType := "read"
 		if r.Method == "POST" {
 			accessType = "write"
@@ -53,52 +52,24 @@ func main() {
 		}
 
 		if accessType == "write" {
-			var data interface{}
-			err := json.NewDecoder(r.Body).Decode(&data)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			if r.URL.Path == "" || r.URL.Path == "/" {
-				http.Error(w, "cannot write to root", http.StatusBadRequest)
-				return
-			}
-			err = scriptingbridge.SetStoreValue(r.URL.Path, data)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusCreated)
+			server.HandleWrite(w, r)
 		} else {
-			store, err := sqlite.FetchStore()
-			if err != nil {
-				healthError = err
-				log.Fatal(err)
-			}
-			healthError = nil
-
-			target, err := server.GetValueByPath(store, r.URL.Path)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-
-			jsonData, err := json.Marshal(target)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-			fmt.Fprintf(w, "%s\n", jsonData)
+			server.HandleRead(w, r)
 		}
-	}))
+	}
 
-	http.HandleFunc("/-/healthy", func(w http.ResponseWriter, r *http.Request) {
-		if healthError != nil {
-			http.Error(w, healthError.Error(), 500)
-		} else {
-			fmt.Fprintf(w, "OK")
+	if s.Ephemeral {
+		c := make(chan os.Signal, 1)
+		shutdown := func() {
+			<-c
+			lc.Logout(context.TODO())
+			os.Exit(1)
 		}
-	})
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go shutdown()
+	}
 
+	http.HandleFunc("/", defaultHandler)
+	http.HandleFunc("/-/healthy", server.HandleHealthy)
 	log.Fatal(http.Serve(ln, nil))
 }
