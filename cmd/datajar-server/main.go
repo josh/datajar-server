@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
@@ -17,15 +15,13 @@ import (
 )
 
 func main() {
-	dir := filepath.Join("./state")
-	if err := os.MkdirAll(dir, 0700); err != nil {
-		log.Fatal(err)
-	}
-
+	statedir := flag.String("statedir", "", "Directory to store state")
+	hostname := flag.String("hostname", "datajar", "Tailscale node hostname")
 	flag.Parse()
+
 	s := &tsnet.Server{
-		Dir:       dir,
-		Hostname:  "datajar",
+		Dir:       *statedir,
+		Hostname:  *hostname,
 		Ephemeral: true,
 	}
 	defer s.Close()
