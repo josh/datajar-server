@@ -43,7 +43,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Fatal(http.Serve(ln, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var healthError error
+
+	http.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := checkPermissions(lc, r)
 		if err != nil {
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
@@ -53,8 +55,10 @@ func main() {
 
 		store, err := sqlite.FetchStore()
 		if err != nil {
+			healthError = err
 			log.Fatal(err)
 		}
+		healthError = nil
 
 		target := acl.GetPath(store, r.URL.Path)
 
@@ -64,7 +68,17 @@ func main() {
 			return
 		}
 		fmt.Fprintf(w, "%s\n", jsonData)
-	})))
+	}))
+
+	http.HandleFunc("/-/healthy", func(w http.ResponseWriter, r *http.Request) {
+		if healthError != nil {
+			http.Error(w, healthError.Error(), 500)
+		} else {
+			fmt.Fprintf(w, "OK")
+		}
+	})
+
+	log.Fatal(http.Serve(ln, nil))
 }
 
 const peerCapName = "github.com/josh/datajar-server"
