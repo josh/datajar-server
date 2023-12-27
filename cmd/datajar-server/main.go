@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -10,12 +9,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/josh/datajar-server/internal"
 	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
+	"github.com/josh/datajar-server/internal/server"
 
-	"tailscale.com/client/tailscale"
-	"tailscale.com/tailcfg"
 	"tailscale.com/tsnet"
 )
 
@@ -52,7 +49,7 @@ func main() {
 			accessType = "write"
 		}
 
-		err := checkPermissions(lc, r, accessType)
+		err := server.CheckRequestPermissions(lc, r, accessType)
 		if err != nil {
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
 			http.Error(w, errMsg, http.StatusUnauthorized)
@@ -84,7 +81,11 @@ func main() {
 			}
 			healthError = nil
 
-			target := internal.GetPath(store, r.URL.Path)
+			target, err := server.GetValueByPath(store, r.URL.Path)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
 
 			jsonData, err := json.Marshal(target)
 			if err != nil {
@@ -104,24 +105,4 @@ func main() {
 	})
 
 	log.Fatal(http.Serve(ln, nil))
-}
-
-const peerCapName = "github.com/josh/datajar-server"
-
-func checkPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) error {
-	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
-	if err != nil {
-		return err
-	}
-
-	caps, err := tailcfg.UnmarshalCapJSON[internal.Capabilities](whois.CapMap, peerCapName)
-	if err != nil {
-		return err
-	}
-
-	if !internal.CanAccessPath(r.URL.Path, caps, accessType) {
-		return errors.New("unauthorized")
-	}
-
-	return nil
 }

@@ -1,9 +1,15 @@
-package internal
+package server
 
 import (
+	"errors"
+	"net/http"
 	"path/filepath"
-	"strings"
+
+	"tailscale.com/client/tailscale"
+	"tailscale.com/tailcfg"
 )
+
+const PeerCapName = "github.com/josh/datajar-server"
 
 type Capabilities struct {
 	Read  []string `json:"read"`
@@ -33,20 +39,20 @@ func CanAccessPath(path string, caps []Capabilities, accessType string) bool {
 	return false
 }
 
-func GetPath(store map[string]interface{}, path string) interface{} {
-	if path == "" || path == "/" {
-		return store
+func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) error {
+	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
+	if err != nil {
+		return err
 	}
 
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-
-	current := interface{}(store)
-	for _, part := range parts {
-		if cmap, ok := current.(map[string]interface{}); ok {
-			current = cmap[part]
-		} else {
-			return nil
-		}
+	caps, err := tailcfg.UnmarshalCapJSON[Capabilities](whois.CapMap, PeerCapName)
+	if err != nil {
+		return err
 	}
-	return current
+
+	if !CanAccessPath(r.URL.Path, caps, accessType) {
+		return errors.New("unauthorized")
+	}
+
+	return nil
 }

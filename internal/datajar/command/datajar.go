@@ -1,7 +1,7 @@
 package command
 
 import (
-	"github.com/josh/datajar-server/internal"
+	"github.com/josh/datajar-server/internal/server"
 	"github.com/josh/datajar-server/internal/shortcuts/command"
 )
 
@@ -15,7 +15,7 @@ func FetchStore() (map[string]interface{}, error) {
 }
 
 func SetStoreValue(key string, value interface{}) error {
-	input, err := internal.PrepareShortcutInput(key, value)
+	input, err := server.PrepareShortcutInput(key, value)
 	if err != nil {
 		return err
 	}
