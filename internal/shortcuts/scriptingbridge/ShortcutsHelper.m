@@ -3,6 +3,22 @@
 #import "Shortcuts.h"
 #import "ShortcutsHelper.h"
 
+int hasShortcut(const char *name) {
+    @try {
+        ShortcutsApplication *app = [SBApplication applicationWithBundleIdentifier:@"com.apple.shortcuts.events"];
+        SBElementArray<ShortcutsShortcut *> *shortcuts = [app shortcuts];
+        ShortcutsShortcut *shortcut = [shortcuts objectWithName:[NSString stringWithUTF8String:name]];
+
+        if ([shortcut name] == nil) {
+            return 0;
+        }
+
+        return 1;
+    } @catch (NSException *exception) {
+        return 0;
+    }
+}
+
 void runShortcut(const char* name, const char *input, ShortcutResult *result) {
     @try {
         ShortcutsApplication *app = [SBApplication applicationWithBundleIdentifier:@"com.apple.shortcuts.events"];

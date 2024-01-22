@@ -17,6 +17,17 @@ import (
 
 var mutex = &sync.Mutex{}
 
+func HasShortcut(name string) (bool, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	ok := C.hasShortcut(cName)
+	return ok == 1, nil
+}
+
 func RunShortcut(name string, input string) ([]interface{}, error) {
 	mutex.Lock()
 	defer mutex.Unlock()

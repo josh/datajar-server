@@ -10,6 +10,13 @@ import (
 )
 
 func TestFetchStore(t *testing.T) {
+	if ok := command.FetchStoreConfigured(); !ok {
+		t.Skip("shortcut not found")
+	}
+	if ok := scriptingbridge.FetchStoreConfigured(); !ok {
+		t.Skip("shortcut not found")
+	}
+
 	commandOutput, err := command.FetchStore()
 	if err != nil {
 		t.Error(err)

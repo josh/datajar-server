@@ -5,6 +5,14 @@ import (
 	"github.com/josh/datajar-server/internal/shortcuts/scriptingbridge"
 )
 
+func FetchStoreConfigured() bool {
+	ok, err := scriptingbridge.HasShortcut("Get Data Jar Store")
+	if err != nil || !ok {
+		return false
+	}
+	return true
+}
+
 func FetchStore() (map[string]interface{}, error) {
 	output, err := scriptingbridge.RunShortcut("Get Data Jar Store", "")
 	if err != nil {
