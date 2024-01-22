@@ -8,14 +8,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var StorePath = os.Getenv("HOME") + "/Library/Group Containers/group.dk.simonbs.DataJar/Store/DataJar.sqlite"
+
 func FetchStore() (map[string]interface{}, error) {
-	const filename = "/Users/josh/Library/Group Containers/group.dk.simonbs.DataJar/Store/DataJar.sqlite"
-	_, err := os.Stat(filename)
+	_, err := os.Stat(StorePath)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?mode=ro", filename))
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?mode=ro", StorePath))
 	if err != nil {
 		return nil, err
 	}

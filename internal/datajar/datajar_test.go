@@ -7,13 +7,11 @@ import (
 	"github.com/josh/datajar-server/internal/datajar/command"
 	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
+	shortcuts "github.com/josh/datajar-server/internal/shortcuts/command"
 )
 
 func TestFetchStore(t *testing.T) {
-	if ok := command.FetchStoreConfigured(); !ok {
-		t.Skip("shortcut not found")
-	}
-	if ok := scriptingbridge.FetchStoreConfigured(); !ok {
+	if ok, err := shortcuts.HasShortcut("Get Data Jar Store"); err != nil || !ok {
 		t.Skip("shortcut not found")
 	}
 

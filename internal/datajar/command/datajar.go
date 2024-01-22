@@ -5,14 +5,6 @@ import (
 	"github.com/josh/datajar-server/internal/shortcuts/command"
 )
 
-func FetchStoreConfigured() bool {
-	ok, err := command.HasShortcut("Get Data Jar Store")
-	if err != nil || !ok {
-		return false
-	}
-	return true
-}
-
 func FetchStore() (map[string]interface{}, error) {
 	output, err := command.RunShortcut("Get Data Jar Store", "")
 	if err != nil {
