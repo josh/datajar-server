@@ -12,6 +12,7 @@ import (
 
 	"github.com/josh/datajar-server/internal/server"
 
+	"tailscale.com/hostinfo"
 	"tailscale.com/tsnet"
 )
 
@@ -20,6 +21,8 @@ func main() {
 	hostname := flag.String("hostname", "datajar", "Tailscale node hostname")
 	ephemeral := flag.Bool("ephemeral", false, "Register as an Ephemeral node")
 	flag.Parse()
+
+	hostinfo.SetApp("datajar")
 
 	s := &tsnet.Server{
 		Dir:       *statedir,
