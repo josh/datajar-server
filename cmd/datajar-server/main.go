@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/josh/datajar-server/internal/server"
-
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"tailscale.com/hostinfo"
 	"tailscale.com/tsnet"
 )
@@ -62,6 +62,9 @@ func main() {
 		}
 	}
 
+	defaultHandler = promhttp.InstrumentHandlerDuration(server.RequestDuration, http.HandlerFunc(defaultHandler))
+	defaultHandler = promhttp.InstrumentHandlerCounter(server.RequestsTotal, http.HandlerFunc(defaultHandler))
+
 	if s.Ephemeral {
 		c := make(chan os.Signal, 1)
 		shutdown := func() {
@@ -75,5 +78,6 @@ func main() {
 
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/-/healthy", server.HandleHealthy)
+	http.Handle("/-/metrics", server.MetricsHandler)
 	log.Fatal(http.Serve(ln, nil))
 }
