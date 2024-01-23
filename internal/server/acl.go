@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"tailscale.com/client/tailscale"
+	"tailscale.com/client/tailscale/apitype"
 	"tailscale.com/tailcfg"
 )
 
@@ -41,20 +42,20 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 	return false
 }
 
-func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) error {
+func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) (*apitype.WhoIsResponse, error) {
 	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
 	if err != nil {
-		return err
+		return whois, err
 	}
 
 	caps, err := tailcfg.UnmarshalCapJSON[Capabilities](whois.CapMap, PeerCapName)
 	if err != nil {
-		return err
+		return whois, err
 	}
 
 	if !CanAccessPath(r.URL.Path, caps, accessType) {
-		return errors.New("unauthorized")
+		return whois, errors.New("unauthorized")
 	}
 
-	return nil
+	return whois, nil
 }

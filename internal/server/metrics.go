@@ -8,20 +8,25 @@ import (
 
 var MetricsRegistry = prometheus.NewRegistry()
 
-var RequestsTotal = promauto.With(MetricsRegistry).NewCounterVec(
+var ReadsTotal = promauto.With(MetricsRegistry).NewCounterVec(
 	prometheus.CounterOpts{
-		Name: "http_requests_total",
-		Help: "Tracks the number of HTTP requests.",
-	}, []string{"method", "code"},
+		Name: "datajar_reads_total",
+		Help: "Tracks the number of Data Jar reads.",
+	}, []string{"path", "whois"},
 )
 
-var RequestDuration = promauto.With(MetricsRegistry).NewHistogramVec(
-	prometheus.HistogramOpts{
-		Name:    "http_request_duration_seconds",
-		Help:    "Tracks the latencies for HTTP requests.",
-		Buckets: prometheus.ExponentialBuckets(0.1, 1.5, 5),
-	},
-	[]string{"method", "code"},
+var WritesTotal = promauto.With(MetricsRegistry).NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "datajar_writes_total",
+		Help: "Tracks the number of Data Jar writes.",
+	}, []string{"path", "whois"},
+)
+
+var UnauthorizedTotal = promauto.With(MetricsRegistry).NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "datajar_unauthorized_total",
+		Help: "Tracks the number of unauthorized Data Jar requests.",
+	}, []string{"path", "whois"},
 )
 
 var MetricsHandler = promhttp.HandlerFor(

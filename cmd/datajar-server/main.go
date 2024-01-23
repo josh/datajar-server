@@ -11,7 +11,6 @@ import (
 	"syscall"
 
 	"github.com/josh/datajar-server/internal/server"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"tailscale.com/hostinfo"
 	"tailscale.com/tsnet"
 )
@@ -48,22 +47,26 @@ func main() {
 			accessType = "write"
 		}
 
-		err := server.CheckRequestPermissions(lc, r, accessType)
+		whois, err := server.CheckRequestPermissions(lc, r, accessType)
 		if err != nil {
+			if whois != nil {
+				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
+			} else {
+				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, r.RemoteAddr).Inc()
+			}
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
 			http.Error(w, errMsg, http.StatusUnauthorized)
 			return
 		}
 
 		if accessType == "write" {
+			server.WritesTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
 			server.HandleWrite(w, r)
 		} else {
+			server.ReadsTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
 			server.HandleRead(w, r)
 		}
 	}
-
-	defaultHandler = promhttp.InstrumentHandlerDuration(server.RequestDuration, http.HandlerFunc(defaultHandler))
-	defaultHandler = promhttp.InstrumentHandlerCounter(server.RequestsTotal, http.HandlerFunc(defaultHandler))
 
 	if s.Ephemeral {
 		c := make(chan os.Signal, 1)
