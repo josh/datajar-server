@@ -38,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	go handleConnection(conn)
+	handleConnection(conn)
 }
 
 func handleConnection(conn net.Conn) {
