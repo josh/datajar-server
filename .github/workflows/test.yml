@@ -3,7 +3,7 @@ name: Test
 on: [push]
 
 jobs:
-  test:
+  mac:
     runs-on: macos-latest
     timeout-minutes: 10
 
@@ -14,8 +14,25 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build binary
+      - name: Build server
         run: go build -v cmd/datajar-server/main.go
+
+      - name: Run tests
+        run: go test -v ./internal/server
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build systemd credential server
+        run: go build -v cmd/datajar-credential-server/main.go
 
       - name: Run tests
         run: go test -v ./internal/server
