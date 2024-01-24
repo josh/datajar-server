@@ -18,7 +18,7 @@ jobs:
         run: go build -v cmd/datajar-server/main.go
 
       - name: Run tests
-        run: go test -v ./internal/server
+        run: go test -v ./...
 
   linux:
     runs-on: ubuntu-latest
