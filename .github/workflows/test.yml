@@ -14,8 +14,8 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build server
-        run: go build -v cmd/datajar-server/main.go
+      - name: Build
+        run: go build -v ./...
 
       - name: Run tests
         run: go test -short -v ./...
@@ -31,8 +31,8 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build systemd credential server
-        run: go build -v cmd/datajar-credential-server/main.go
+      - name: Build
+        run: go build -v ./...
 
       - name: Run tests
         run: go test -short -v ./...
