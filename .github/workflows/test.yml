@@ -3,25 +3,12 @@ name: Test
 on: [push]
 
 jobs:
-  mac:
-    runs-on: macos-latest
-    timeout-minutes: 10
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Run tests
-        run: go test -short -v ./...
-
-  linux:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
     steps:
