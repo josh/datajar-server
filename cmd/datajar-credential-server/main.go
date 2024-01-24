@@ -19,23 +19,23 @@ var baseURL string
 func main() {
 	value, ok := os.LookupEnv("DATAJAR_URL")
 	if !ok {
-		log.Fatal("DATAJAR_URL not set")
+		panic("DATAJAR_URL not set")
 	}
 	baseURL = value
 
 	listeners, err := activation.Listeners()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	if len(listeners) != 1 {
-		log.Fatal("Unexpected number of socket activation fds")
+		panic("Unexpected number of socket activation fds")
 	}
 	ln := listeners[0]
 
 	conn, err := ln.Accept()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	go handleConnection(conn)
