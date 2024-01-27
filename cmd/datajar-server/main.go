@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -52,8 +53,10 @@ func main() {
 		whois, err := server.CheckRequestPermissions(lc, r, accessType)
 		if err != nil {
 			if whois != nil {
+				slog.Warn("unauthorized", "path", r.URL.Path)
 				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
 			} else {
+				slog.Warn("unauthorized", "path", r.URL.Path)
 				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, r.RemoteAddr).Inc()
 			}
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
@@ -62,9 +65,11 @@ func main() {
 		}
 
 		if accessType == "write" {
+			slog.Info("write", "path", r.URL.Path)
 			server.WritesTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
 			server.HandleWrite(w, r)
 		} else {
+			slog.Info("read", "path", r.URL.Path)
 			server.ReadsTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
 			server.HandleRead(w, r)
 		}
