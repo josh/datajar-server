@@ -13,10 +13,6 @@ import (
 )
 
 func TestFetchStore(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
 	if ok, err := shortcuts.HasShortcut("Get Data Jar Store"); err != nil || !ok {
 		t.Skip("shortcut not found")
 	}

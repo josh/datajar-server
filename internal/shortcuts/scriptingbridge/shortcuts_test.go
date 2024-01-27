@@ -6,10 +6,6 @@ import "testing"
 
 // Depends on Shortcut named "Test" that outputs 42
 func TestRunShortcut(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
 	if ok, err := HasShortcut("Test"); err != nil {
 		t.Skip("skipping test; error checking for shortcut:", err)
 	} else if !ok {
