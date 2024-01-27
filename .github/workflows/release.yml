@@ -18,6 +18,7 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: arm64
+          CGO_ENABLED: 1
 
       - name: Build datajar-credential-server
         run: go build -o dist/datajar-credential-server ./cmd/datajar-credential-server
