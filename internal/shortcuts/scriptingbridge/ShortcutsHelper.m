@@ -6,7 +6,6 @@
 int hasShortcut(const char *name) {
     @try {
         ShortcutsApplication *app = [SBApplication applicationWithBundleIdentifier:@"com.apple.shortcuts.events"];
-        app.timeout = 10;
         SBElementArray<ShortcutsShortcut *> *shortcuts = [app shortcuts];
         ShortcutsShortcut *shortcut = [shortcuts objectWithName:[NSString stringWithUTF8String:name]];
 
