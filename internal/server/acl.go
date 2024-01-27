@@ -17,8 +17,9 @@ import (
 const PeerCapName = "github.com/josh/datajar-server"
 
 type Capabilities struct {
-	Read  []string `json:"read"`
-	Write []string `json:"write"`
+	Read    []string `json:"read"`
+	Write   []string `json:"write"`
+	Metrics bool     `json:"metrics"`
 }
 
 func CanAccessPath(requestPath string, caps []Capabilities, accessType string) bool {
@@ -33,6 +34,12 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 			accessList = cap.Read
 		} else if accessType == "write" {
 			accessList = cap.Write
+		} else if accessType == "metrics" {
+			if cap.Metrics {
+				return true
+			} else {
+				continue
+			}
 		}
 
 		for _, accessPattern := range accessList {

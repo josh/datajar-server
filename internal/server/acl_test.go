@@ -52,4 +52,13 @@ func TestCanAccessPath(t *testing.T) {
 	if CanAccessPath("/foo/bar", caps, "read") != true {
 		t.Error("* could not read /foo/bar")
 	}
+
+	caps = []Capabilities{{Metrics: true}}
+	if CanAccessPath("/", caps, "metrics") != true {
+		t.Error("could not access metrics")
+	}
+	caps = []Capabilities{{Metrics: false}}
+	if CanAccessPath("/", caps, "metrics") != false {
+		t.Error("could access metrics")
+	}
 }
