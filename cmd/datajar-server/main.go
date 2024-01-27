@@ -5,9 +5,7 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -44,45 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// var readHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 	whois := r.Context().Value(server.WhoisKey).(*apitype.WhoIsResponse)
-	// 	remoteIP := r.Context().Value(server.RemoteIPKey).(string)
-	// 	slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
-	// 	server.ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-	// 	server.HandleRead(w, r)
-	// })
-
-	defaultHandler := func(w http.ResponseWriter, r *http.Request) {
-		accessType := "read"
-		if r.Method == "POST" {
-			accessType = "write"
-		}
-
-		whois, remoteIP, err := server.CheckRequestPermissions(lc, r, accessType)
-		if err != nil {
-			if whois != nil {
-				slog.Error("unauthorized", "remoteAddr", r.RemoteAddr, "path", r.URL.Path)
-				server.UnauthorizedTotal.WithLabelValues("", "", r.URL.Path).Inc()
-			} else {
-				slog.Warn("unauthorized", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
-				server.UnauthorizedTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-			}
-			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
-			http.Error(w, errMsg, http.StatusUnauthorized)
-			return
-		}
-
-		if accessType == "write" {
-			slog.Info("write", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
-			server.WritesTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-			server.WriteHandler.ServeHTTP(w, r)
-		} else {
-			slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
-			server.ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-			server.ReadHandler.ServeHTTP(w, r)
-		}
-	}
-
 	if s.Ephemeral {
 		c := make(chan os.Signal, 1)
 		shutdown := func() {
@@ -94,7 +53,10 @@ func main() {
 		go shutdown()
 	}
 
-	http.HandleFunc("/", defaultHandler)
+	readHandler := server.CheckRequestPermissionsHandler(lc, "read", server.ReadHandler)
+	writeHandler := server.CheckRequestPermissionsHandler(lc, "write", server.WriteHandler)
+
+	http.Handle("/", server.MethodHandler(readHandler, writeHandler))
 	http.Handle("/-/healthy", server.HealthyHandler)
 	http.Handle("/-/metrics", server.CheckRequestPermissionsHandler(lc, "metrics", server.MetricsHandler))
 	log.Fatal(http.Serve(ln, nil))

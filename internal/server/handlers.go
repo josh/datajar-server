@@ -6,15 +6,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/josh/datajar-server/internal/datajar/scriptingbridge"
 	"github.com/josh/datajar-server/internal/datajar/sqlite"
+	"tailscale.com/client/tailscale/apitype"
 )
 
 var healthError error
 
 var ReadHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	whois := r.Context().Value(WhoisKey).(*apitype.WhoIsResponse)
+	remoteIP := r.Context().Value(RemoteIPKey).(string)
+
+	slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+	ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
+
 	store, err := sqlite.FetchStore()
 	if err != nil {
 		healthError = err
@@ -50,6 +58,12 @@ var ReadHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *h
 })
 
 var WriteHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	whois := r.Context().Value(WhoisKey).(*apitype.WhoIsResponse)
+	remoteIP := r.Context().Value(RemoteIPKey).(string)
+
+	slog.Info("write", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+	WritesTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
+
 	var data interface{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
@@ -78,3 +92,15 @@ var HealthyHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r
 		fmt.Fprintf(w, "OK")
 	}
 })
+
+func MethodHandler(getHandle http.Handler, postHandler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			getHandle.ServeHTTP(w, r)
+		} else if r.Method == "POST" {
+			postHandler.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+}

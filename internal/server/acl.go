@@ -54,14 +54,13 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 }
 
 func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) (*apitype.WhoIsResponse, string, error) {
-	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
-	if err != nil {
-		return whois, "", err
-	}
+	host, _, spliterr := net.SplitHostPort(r.RemoteAddr)
+	whois, whoiserr := localClient.WhoIs(r.Context(), r.RemoteAddr)
 
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return whois, host, err
+	if spliterr != nil {
+		return whois, host, spliterr
+	} else if whoiserr != nil {
+		return whois, host, whoiserr
 	}
 
 	if host[0:4] != "100." {
@@ -95,11 +94,11 @@ func (m *ACLMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	whois, remoteIP, err := CheckRequestPermissions(m.localClient, r, m.accessType)
 	if err != nil {
 		if whois != nil {
-			slog.Error("unauthorized", "remoteAddr", r.RemoteAddr, "path", r.URL.Path)
-			UnauthorizedTotal.WithLabelValues("", "", r.URL.Path).Inc()
-		} else {
 			slog.Warn("unauthorized", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
 			UnauthorizedTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
+		} else {
+			slog.Error("unauthorized", "remoteAddr", r.RemoteAddr, "path", r.URL.Path)
+			UnauthorizedTotal.WithLabelValues("", remoteIP, r.URL.Path).Inc()
 		}
 		errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		http.Error(w, errMsg, http.StatusUnauthorized)
