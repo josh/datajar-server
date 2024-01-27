@@ -12,21 +12,21 @@ var ReadsTotal = promauto.With(MetricsRegistry).NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "datajar_reads_total",
 		Help: "Tracks the number of Data Jar reads.",
-	}, []string{"path", "whois"},
+	}, []string{"hostname", "ip", "path"},
 )
 
 var WritesTotal = promauto.With(MetricsRegistry).NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "datajar_writes_total",
 		Help: "Tracks the number of Data Jar writes.",
-	}, []string{"path", "whois"},
+	}, []string{"hostname", "ip", "path"},
 )
 
 var UnauthorizedTotal = promauto.With(MetricsRegistry).NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "datajar_unauthorized_total",
 		Help: "Tracks the number of unauthorized Data Jar requests.",
-	}, []string{"path", "whois"},
+	}, []string{"hostname", "ip", "path"},
 )
 
 var MetricsHandler = promhttp.HandlerFor(

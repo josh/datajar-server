@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"strings"
 
@@ -42,20 +43,29 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 	return false
 }
 
-func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) (*apitype.WhoIsResponse, error) {
+func CheckRequestPermissions(localClient *tailscale.LocalClient, r *http.Request, accessType string) (*apitype.WhoIsResponse, string, error) {
 	whois, err := localClient.WhoIs(r.Context(), r.RemoteAddr)
 	if err != nil {
-		return whois, err
+		return whois, "", err
+	}
+
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return whois, host, err
+	}
+
+	if host[0:4] != "100." {
+		return whois, host, errors.New("remoteAddr is not a Tailscale IP")
 	}
 
 	caps, err := tailcfg.UnmarshalCapJSON[Capabilities](whois.CapMap, PeerCapName)
 	if err != nil {
-		return whois, err
+		return whois, host, err
 	}
 
 	if !CanAccessPath(r.URL.Path, caps, accessType) {
-		return whois, errors.New("unauthorized")
+		return whois, host, errors.New("unauthorized")
 	}
 
-	return whois, nil
+	return whois, host, nil
 }

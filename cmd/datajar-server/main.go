@@ -50,14 +50,14 @@ func main() {
 			accessType = "write"
 		}
 
-		whois, err := server.CheckRequestPermissions(lc, r, accessType)
+		whois, remoteIP, err := server.CheckRequestPermissions(lc, r, accessType)
 		if err != nil {
 			if whois != nil {
-				slog.Warn("unauthorized", "path", r.URL.Path)
-				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
+				slog.Error("unauthorized", "remoteAddr", r.RemoteAddr, "path", r.URL.Path)
+				server.UnauthorizedTotal.WithLabelValues("", "", r.URL.Path).Inc()
 			} else {
-				slog.Warn("unauthorized", "path", r.URL.Path)
-				server.UnauthorizedTotal.WithLabelValues(r.URL.Path, r.RemoteAddr).Inc()
+				slog.Warn("unauthorized", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+				server.UnauthorizedTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
 			}
 			errMsg := fmt.Sprintf(`{"error": "%s"}`, err.Error())
 			http.Error(w, errMsg, http.StatusUnauthorized)
@@ -65,12 +65,12 @@ func main() {
 		}
 
 		if accessType == "write" {
-			slog.Info("write", "path", r.URL.Path)
-			server.WritesTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
+			slog.Info("write", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+			server.WritesTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
 			server.HandleWrite(w, r)
 		} else {
-			slog.Info("read", "path", r.URL.Path)
-			server.ReadsTotal.WithLabelValues(r.URL.Path, whois.Node.Name).Inc()
+			slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+			server.ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
 			server.HandleRead(w, r)
 		}
 	}
