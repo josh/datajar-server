@@ -1,0 +1,38 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build datajar-server
+        run: go build -o dist/datajar-server ./cmd/datajar-server
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+
+      - name: Build datajar-credential-server
+        run: go build -o dist/datajar-credential-server ./cmd/datajar-credential-server
+        env:
+          GOOS: linux
+          GOARCH: amd64
+
+      - name: Upload datajar-server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: datajar-server
+          path: dist/datajar-server
+
+      - name: Upload datajar-credential-server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: datajar-credential-server
+          path: dist/datajar-credential-server
