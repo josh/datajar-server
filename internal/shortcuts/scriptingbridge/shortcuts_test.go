@@ -29,6 +29,10 @@ func TestRunShortcut(t *testing.T) {
 }
 
 func TestMissingShortcut(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	if ok, err := HasShortcut("Test"); err != nil {
 		t.Skip("error checking for shortcut:", err)
 	} else if !ok {
