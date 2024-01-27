@@ -75,11 +75,11 @@ func main() {
 		if accessType == "write" {
 			slog.Info("write", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
 			server.WritesTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-			server.HandleWrite(w, r)
+			server.WriteHandler.ServeHTTP(w, r)
 		} else {
 			slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
 			server.ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
-			server.HandleRead(w, r)
+			server.ReadHandler.ServeHTTP(w, r)
 		}
 	}
 
@@ -95,7 +95,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", defaultHandler)
-	http.HandleFunc("/-/healthy", server.HandleHealthy)
+	http.Handle("/-/healthy", server.HealthyHandler)
 	http.Handle("/-/metrics", server.CheckRequestPermissionsHandler(lc, "metrics", server.MetricsHandler))
 	log.Fatal(http.Serve(ln, nil))
 }
