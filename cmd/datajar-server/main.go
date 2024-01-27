@@ -88,6 +88,6 @@ func main() {
 
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/-/healthy", server.HandleHealthy)
-	http.Handle("/-/metrics", server.MetricsHandler)
+	http.Handle("/-/metrics", server.CheckRequestPermissionsHandler(lc, "metrics", server.MetricsHandler))
 	log.Fatal(http.Serve(ln, nil))
 }
