@@ -44,6 +44,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// var readHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	whois := r.Context().Value(server.WhoisKey).(*apitype.WhoIsResponse)
+	// 	remoteIP := r.Context().Value(server.RemoteIPKey).(string)
+	// 	slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
+	// 	server.ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
+	// 	server.HandleRead(w, r)
+	// })
+
 	defaultHandler := func(w http.ResponseWriter, r *http.Request) {
 		accessType := "read"
 		if r.Method == "POST" {

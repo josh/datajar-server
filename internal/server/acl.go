@@ -82,6 +82,7 @@ type ACLMiddleware struct {
 type contextKey string
 
 const WhoisKey contextKey = "whois"
+const RemoteIPKey contextKey = "remoteIP"
 
 func (m *ACLMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	whois, remoteIP, err := CheckRequestPermissions(m.localClient, r, m.accessType)
@@ -98,7 +99,10 @@ func (m *ACLMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), WhoisKey, whois)
+	ctx := r.Context()
+	ctx = context.WithValue(ctx, WhoisKey, whois)
+	ctx = context.WithValue(ctx, RemoteIPKey, remoteIP)
+
 	m.handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
