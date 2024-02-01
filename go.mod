@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/mattn/go-sqlite3 v1.14.20
+	github.com/mattn/go-sqlite3 v1.14.21
 	github.com/prometheus/client_golang v1.18.0
 	tailscale.com v1.58.2
 )
