@@ -3,12 +3,14 @@
 package scriptingbridge
 
 import (
+	"context"
+
 	"github.com/josh/datajar-server/internal/datajar/shortcuts"
 	"github.com/josh/datajar-server/internal/shortcuts/scriptingbridge"
 )
 
-func FetchStore() (map[string]interface{}, error) {
-	output, err := scriptingbridge.RunShortcut("Get Data Jar Store", "")
+func FetchStore(ctx context.Context) (map[string]interface{}, error) {
+	output, err := scriptingbridge.RunShortcut(ctx, "Get Data Jar Store", "")
 	if err != nil {
 		return nil, err
 	}
@@ -16,11 +18,11 @@ func FetchStore() (map[string]interface{}, error) {
 	return result, nil
 }
 
-func SetStoreValue(key string, value interface{}) error {
+func SetStoreValue(ctx context.Context, key string, value interface{}) error {
 	input, err := shortcuts.PrepareShortcutInput(key, value)
 	if err != nil {
 		return err
 	}
-	_, err = scriptingbridge.RunShortcut("Set Data Jar Value", input)
+	_, err = scriptingbridge.RunShortcut(ctx, "Set Data Jar Value", input)
 	return err
 }

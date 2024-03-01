@@ -11,6 +11,7 @@ package scriptingbridge
 import "C"
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -20,7 +21,10 @@ import (
 
 var mutex = &sync.Mutex{}
 
-func HasShortcut(name string) (bool, error) {
+func HasShortcut(ctx context.Context, name string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	c := make(chan bool, 1)
 	go func() {
 		mutex.Lock()
@@ -36,12 +40,12 @@ func HasShortcut(name string) (bool, error) {
 	select {
 	case ok := <-c:
 		return ok, nil
-	case <-time.After(5 * time.Second):
-		return false, fmt.Errorf("timeout")
+	case <-ctx.Done():
+		return false, ctx.Err()
 	}
 }
 
-func RunShortcut(name string, input string) ([]interface{}, error) {
+func RunShortcut(ctx context.Context, name string, input string) ([]interface{}, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 

@@ -23,7 +23,8 @@ var ReadHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *h
 	slog.Info("read", "hostname", whois.Node.Name, "ip", remoteIP, "path", r.URL.Path)
 	ReadsTotal.WithLabelValues(whois.Node.Name, remoteIP, r.URL.Path).Inc()
 
-	store, err := sqlite.FetchStore()
+	ctx := r.Context()
+	store, err := sqlite.FetchStore(ctx)
 	if err != nil {
 		healthError = err
 		log.Println(err)
@@ -76,7 +77,8 @@ var WriteHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *
 		return
 	}
 
-	err = scriptingbridge.SetStoreValue(r.URL.Path, data)
+	ctx := r.Context()
+	err = scriptingbridge.SetStoreValue(ctx, r.URL.Path, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

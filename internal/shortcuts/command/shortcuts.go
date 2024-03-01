@@ -3,16 +3,21 @@
 package command
 
 import (
+	"context"
 	"encoding/json"
 	"os/exec"
 	"strings"
 	"sync"
+	"time"
 )
 
 var mutex = &sync.Mutex{}
 
-func HasShortcut(name string) (bool, error) {
-	cmd := exec.Command("shortcuts", "list")
+func HasShortcut(ctx context.Context, name string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "shortcuts", "list")
 	stdout, err := cmd.Output()
 	if err != nil {
 		return false, err
@@ -28,11 +33,11 @@ func HasShortcut(name string) (bool, error) {
 	return false, nil
 }
 
-func RunShortcut(name string, input string) (interface{}, error) {
+func RunShortcut(ctx context.Context, name string, input string) (interface{}, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	cmd := exec.Command("shortcuts", "run", name)
+	cmd := exec.CommandContext(ctx, "shortcuts", "run", name)
 	cmd.Stdin = strings.NewReader(input)
 
 	stdout, err := cmd.Output()

@@ -3,18 +3,21 @@
 package command
 
 import (
+	"context"
 	"testing"
 )
 
 // Depends on Shortcut named "Test" that outputs 42
 func TestRunShortcut(t *testing.T) {
-	if ok, err := HasShortcut("Test"); err != nil {
+	ctx := context.TODO()
+
+	if ok, err := HasShortcut(ctx, "Test"); err != nil {
 		t.Skip("skipping test; error checking for shortcut:", err)
 	} else if !ok {
 		t.Skip("skipping test; shortcut not found")
 	}
 
-	output, err := RunShortcut("Test", "")
+	output, err := RunShortcut(ctx, "Test", "")
 	if err != nil {
 		t.Errorf("error running shortcut: %s", err)
 	} else if _, ok := output.(float64); !ok {
@@ -25,13 +28,15 @@ func TestRunShortcut(t *testing.T) {
 }
 
 func TestMissingShortcut(t *testing.T) {
-	if ok, err := HasShortcut("Test"); err != nil {
+	ctx := context.TODO()
+
+	if ok, err := HasShortcut(ctx, "Test"); err != nil {
 		t.Skip("error checking for shortcut:", err)
 	} else if !ok {
 		t.Skip("shortcut not found")
 	}
 
-	_, err := RunShortcut("DefinitelyDoesNotExist", "")
+	_, err := RunShortcut(ctx, "DefinitelyDoesNotExist", "")
 	if err == nil {
 		t.Errorf("expected error, got nil")
 	}

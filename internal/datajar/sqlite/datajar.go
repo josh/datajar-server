@@ -3,6 +3,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -12,7 +13,7 @@ import (
 
 var StorePath = os.Getenv("HOME") + "/Library/Group Containers/group.dk.simonbs.DataJar/Store/DataJar.sqlite"
 
-func FetchStore() (map[string]interface{}, error) {
+func FetchStore(ctx context.Context) (map[string]interface{}, error) {
 	_, err := os.Stat(StorePath)
 	if err != nil {
 		return nil, err
