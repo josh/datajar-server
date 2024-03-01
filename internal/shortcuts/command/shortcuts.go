@@ -12,9 +12,6 @@ import (
 var mutex = &sync.Mutex{}
 
 func HasShortcut(name string) (bool, error) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	cmd := exec.Command("shortcuts", "list")
 	stdout, err := cmd.Output()
 	if err != nil {
