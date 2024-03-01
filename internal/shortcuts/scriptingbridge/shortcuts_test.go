@@ -11,10 +11,6 @@ import (
 func TestRunShortcut(t *testing.T) {
 	ctx := context.TODO()
 
-	if testing.Short() {
-		t.Skip()
-	}
-
 	if ok, err := HasShortcut(ctx, "Test"); err != nil {
 		t.Skip("skipping test; error checking for shortcut:", err)
 	} else if !ok {
@@ -35,10 +31,6 @@ func TestRunShortcut(t *testing.T) {
 
 func TestMissingShortcut(t *testing.T) {
 	ctx := context.TODO()
-
-	if testing.Short() {
-		t.Skip()
-	}
 
 	if ok, err := HasShortcut(ctx, "Test"); err != nil {
 		t.Skip("error checking for shortcut:", err)

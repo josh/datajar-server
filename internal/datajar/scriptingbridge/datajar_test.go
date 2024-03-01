@@ -13,10 +13,6 @@ import (
 func TestFetchStore(t *testing.T) {
 	ctx := context.TODO()
 
-	if testing.Short() {
-		t.Skip()
-	}
-
 	if ok, err := shortcuts.HasShortcut(ctx, "Get Data Jar Store"); err != nil || !ok {
 		t.Skip("shortcut not found")
 	}
@@ -32,10 +28,6 @@ func TestFetchStore(t *testing.T) {
 // Depends on Shortcut named "Set Data Jar Value" that accepts input
 func TestSetStoreValue(t *testing.T) {
 	ctx := context.TODO()
-
-	if testing.Short() {
-		t.Skip()
-	}
 
 	if ok, err := shortcuts.HasShortcut(ctx, "Set Data Jar Value"); err != nil || !ok {
 		t.Skip("shortcut not found")
