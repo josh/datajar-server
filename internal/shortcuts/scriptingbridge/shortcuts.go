@@ -14,20 +14,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 	"unsafe"
 )
 
 var mutex = &sync.Mutex{}
 
 func HasShortcut(name string) (bool, error) {
-	mutex.Lock()
-	defer mutex.Unlock()
+	c := make(chan bool, 1)
+	go func() {
+		mutex.Lock()
+		defer mutex.Unlock()
 
-	cName := C.CString(name)
-	defer C.free(unsafe.Pointer(cName))
+		cName := C.CString(name)
+		defer C.free(unsafe.Pointer(cName))
 
-	ok := C.hasShortcut(cName)
-	return ok == 1, nil
+		ok := C.hasShortcut(cName)
+		c <- ok == 1
+	}()
+
+	select {
+	case ok := <-c:
+		return ok, nil
+	case <-time.After(5 * time.Second):
+		return false, fmt.Errorf("timeout")
+	}
 }
 
 func RunShortcut(name string, input string) ([]interface{}, error) {
