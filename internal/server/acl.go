@@ -47,7 +47,6 @@ func CanAccessPath(requestPath string, caps []Capabilities, accessType string) b
 			if strings.HasPrefix(requestPath, pathPrefix) {
 				return true
 			}
-
 		}
 	}
 	return false

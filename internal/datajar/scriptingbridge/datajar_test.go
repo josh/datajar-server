@@ -9,7 +9,7 @@ import (
 	shortcuts "github.com/josh/datajar-server/internal/shortcuts/scriptingbridge"
 )
 
-// Depends on Shortcut named "Get Data Jar Store" that outputs 42
+// Depends on Shortcut named "Get Data Jar Store" that outputs 42.
 func TestFetchStore(t *testing.T) {
 	ctx := context.TODO()
 
@@ -25,7 +25,7 @@ func TestFetchStore(t *testing.T) {
 	}
 }
 
-// Depends on Shortcut named "Set Data Jar Value" that accepts input
+// Depends on Shortcut named "Set Data Jar Value" that accepts input.
 func TestSetStoreValue(t *testing.T) {
 	ctx := context.TODO()
 

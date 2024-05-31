@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// Depends on Shortcut named "Test" that outputs 42
+// Depends on Shortcut named "Test" that outputs 42.
 func TestRunShortcut(t *testing.T) {
 	ctx := context.TODO()
 
