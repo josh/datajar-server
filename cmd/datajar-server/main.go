@@ -46,7 +46,7 @@ func main() {
 		c := make(chan os.Signal, 1)
 		shutdown := func() {
 			<-c
-			lc.Logout(context.TODO())
+			_ = lc.Logout(context.TODO())
 			os.Exit(1)
 		}
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
