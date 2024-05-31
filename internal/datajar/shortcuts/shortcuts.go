@@ -11,8 +11,7 @@ type ShortcutInput struct {
 }
 
 func ConvertToJSONPath(requestPath string) string {
-	jsonPath := requestPath
-	jsonPath = strings.Join(strings.Split(strings.Trim(requestPath, "/"), "/"), ".")
+	jsonPath := strings.Join(strings.Split(strings.Trim(requestPath, "/"), "/"), ".")
 	return jsonPath
 }
 
